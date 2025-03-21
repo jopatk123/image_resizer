@@ -27,7 +27,17 @@ class ImageResizerApp:
         self.select_btn = ttk.Button(self.left_frame, 
                                    text="选择图片文件夹", 
                                    command=self.select_folder)
-        self.select_btn.pack(pady=(5, 10), padx=5, fill='x')
+        self.select_btn.pack(pady=(5, 5), padx=5, fill='x')
+        
+        # 添加包含子文件夹选项
+        self.include_subfolders = tk.BooleanVar(value=False)
+        self.subfolder_check = ttk.Checkbutton(
+            self.left_frame,
+            text="包含子文件夹中的图片",
+            variable=self.include_subfolders,
+            command=self.reload_images
+        )
+        self.subfolder_check.pack(pady=(0, 5), padx=5, fill='x')
         
         # 显示选择的文件夹路径
         self.path_label = ttk.Label(self.left_frame, 
@@ -186,6 +196,11 @@ class ImageResizerApp:
             self.path_label.config(text=f"已选择文件夹: {folder_path}")
             self.load_images()
     
+    def reload_images(self):
+        """重新加载图片，当子文件夹选项改变时调用"""
+        if self.current_folder:
+            self.load_images()
+    
     def load_images(self):
         # 清空列表框
         self.listbox.delete(0, tk.END)
@@ -193,10 +208,22 @@ class ImageResizerApp:
         
         # 获取所有图片文件
         valid_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.bmp')
-        for file in os.listdir(self.current_folder):
-            if file.lower().endswith(valid_extensions):
-                self.image_files.append(file)
-                self.listbox.insert(tk.END, file)
+        
+        if self.include_subfolders.get():
+            # 递归搜索所有子文件夹
+            for root, _, files in os.walk(self.current_folder):
+                for file in files:
+                    if file.lower().endswith(valid_extensions):
+                        # 保存相对路径，以便正确显示和处理
+                        rel_path = os.path.relpath(os.path.join(root, file), self.current_folder)
+                        self.image_files.append(rel_path)
+                        self.listbox.insert(tk.END, rel_path)
+        else:
+            # 只搜索当前文件夹
+            for file in os.listdir(self.current_folder):
+                if file.lower().endswith(valid_extensions):
+                    self.image_files.append(file)
+                    self.listbox.insert(tk.END, file)
     
     def show_preview(self, event):
         selection = self.listbox.curselection()
@@ -211,7 +238,7 @@ class ImageResizerApp:
                 
                 # 调整图片大小以适应预览窗口
                 preview_size = (300, 300)
-                image.thumbnail(preview_size, Image.ANTIALIAS)
+                image.thumbnail(preview_size, Image.Resampling.LANCZOS)
                 
                 # 创建PhotoImage对象
                 photo = ImageTk.PhotoImage(image)
@@ -253,6 +280,14 @@ class ImageResizerApp:
             
             for image_file in self.image_files:
                 input_path = os.path.join(self.current_folder, image_file)
+                
+                # 处理子文件夹中的图片，确保输出路径正确
+                if os.path.dirname(image_file):
+                    # 创建对应的输出子文件夹
+                    output_subdir = os.path.join(output_folder, os.path.dirname(image_file))
+                    if not os.path.exists(output_subdir):
+                        os.makedirs(output_subdir)
+                
                 output_path = os.path.join(output_folder, image_file)
                 
                 with Image.open(input_path) as img:
@@ -276,7 +311,7 @@ class ImageResizerApp:
                             new_height = height
                             new_width = int(original_width * ratio)
                     
-                    resized_img = img.resize((new_width, new_height), Image.ANTIALIAS)
+                    resized_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
                     resized_img.save(output_path)
             
             messagebox.showinfo("完成", f"调整尺寸完成！\n保存在: {output_folder}")
@@ -300,6 +335,14 @@ class ImageResizerApp:
             
             for image_file in self.image_files:
                 input_path = os.path.join(self.current_folder, image_file)
+                
+                # 处理子文件夹中的图片，确保输出路径正确
+                if os.path.dirname(image_file):
+                    # 创建对应的输出子文件夹
+                    output_subdir = os.path.join(output_folder, os.path.dirname(image_file))
+                    if not os.path.exists(output_subdir):
+                        os.makedirs(output_subdir)
+                
                 output_path = os.path.join(output_folder, image_file)
                 
                 with Image.open(input_path) as img:
@@ -329,6 +372,14 @@ class ImageResizerApp:
             
             for image_file in self.image_files:
                 input_path = os.path.join(self.current_folder, image_file)
+                
+                # 处理子文件夹中的图片，确保输出路径正确
+                if os.path.dirname(image_file):
+                    # 创建对应的输出子文件夹
+                    output_subdir = os.path.join(output_folder, os.path.dirname(image_file))
+                    if not os.path.exists(output_subdir):
+                        os.makedirs(output_subdir)
+                
                 output_path = os.path.join(output_folder, image_file)
                 
                 with Image.open(input_path) as img:
@@ -342,10 +393,10 @@ class ImageResizerApp:
                     new_height = int(height * cos_a + width * sin_a)
                     
                     scale = max(width / new_width, height / new_height)
-                    scale *= 1.1
+                    scale *= 1.2
                     
                     enlarged_size = (int(img.size[0] * scale), int(img.size[1] * scale))
-                    img = img.resize(enlarged_size, Image.ANTIALIAS)
+                    img = img.resize(enlarged_size, Image.Resampling.LANCZOS)
                     img = img.rotate(angle, Image.BICUBIC, expand=False)
                     
                     left = (img.size[0] - width) // 2
@@ -378,6 +429,14 @@ class ImageResizerApp:
             
             for image_file in self.image_files:
                 input_path = os.path.join(self.current_folder, image_file)
+                
+                # 处理子文件夹中的图片，确保输出路径正确
+                if os.path.dirname(image_file):
+                    # 创建对应的输出子文件夹
+                    output_subdir = os.path.join(output_folder, os.path.dirname(image_file))
+                    if not os.path.exists(output_subdir):
+                        os.makedirs(output_subdir)
+                
                 output_path = os.path.join(output_folder, image_file)
                 
                 with Image.open(input_path) as img:
@@ -415,4 +474,4 @@ class ImageResizerApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = ImageResizerApp(root)
-    root.mainloop() 
+    root.mainloop()
