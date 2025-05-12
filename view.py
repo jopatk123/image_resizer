@@ -20,9 +20,15 @@ class ImageResizerApp:
         
         # 设置整体样式
         style = ttk.Style()
-        style.configure('TButton', padding=5)
-        style.configure('TLabelframe', padding=8)
-        style.configure('TLabelframe.Label', font=('Arial', 9, 'bold'))
+        # 设置中文字体和增加行宽
+        default_font = ('Microsoft YaHei UI', 10)  # 使用微软雅黑UI字体
+        style.configure('TButton', padding=8, font=default_font)
+        style.configure('TLabelframe', padding=10)
+        style.configure('TLabelframe.Label', font=('Microsoft YaHei UI', 10, 'bold'))
+        style.configure('TLabel', font=default_font)
+        style.configure('TCheckbutton', font=default_font)
+        style.configure('TRadiobutton', font=default_font)
+        style.configure('TNotebook.Tab', font=default_font, padding=(10, 5))
         
         # 进度条变量
         self.progress_var = tk.DoubleVar(value=0.0)
@@ -32,7 +38,7 @@ class ImageResizerApp:
     
     def _init_ui(self):
         # 创建主框架
-        self.main_frame = ttk.Frame(self.root, padding="10")
+        self.main_frame = ttk.Frame(self.root, padding="15")
         self.main_frame.pack(expand=True, fill='both')
         
         self._init_left_frame()
@@ -40,14 +46,14 @@ class ImageResizerApp:
     
     def _init_left_frame(self):
         # 左侧框架（文件列表区域）
-        self.left_frame = ttk.LabelFrame(self.main_frame, text="文件列表", padding="5")
+        self.left_frame = ttk.LabelFrame(self.main_frame, text="文件列表", padding="10")
         self.left_frame.pack(side='left', fill='both', expand=True, padx=(0, 10))
         
         # 选择文件夹按钮
         self.select_btn = ttk.Button(self.left_frame, 
                                    text="选择图片文件夹", 
                                    command=self.select_folder)
-        self.select_btn.pack(pady=(5, 5), padx=5, fill='x')
+        self.select_btn.pack(pady=(8, 8), padx=10, fill='x')
         
         # 添加包含子文件夹选项
         self.include_subfolders = tk.BooleanVar(value=False)
@@ -62,7 +68,7 @@ class ImageResizerApp:
         # 显示选择的文件夹路径
         self.path_label = ttk.Label(self.left_frame, 
                                   text="未选择文件夹", 
-                                  wraplength=350)
+                                  wraplength=400)
         self.path_label.pack(pady=(0, 5), padx=5)
         
         # 创建列表框和滚动条
@@ -75,8 +81,9 @@ class ImageResizerApp:
         self.listbox = tk.Listbox(self.listbox_frame, 
                                  yscrollcommand=self.scrollbar.set,
                                  selectmode='single',
-                                 font=('Arial', 9),
-                                 activestyle='dotbox')
+                                 font=('Microsoft YaHei UI', 10),
+                                 activestyle='dotbox',
+                                 width=40)
         self.listbox.pack(side='left', fill='both', expand=True)
         self.scrollbar.config(command=self.listbox.yview)
         
@@ -87,7 +94,7 @@ class ImageResizerApp:
         self.delete_btn = ttk.Button(self.left_frame,
                                    text="删除选中图片",
                                    command=self.delete_selected)
-        self.delete_btn.pack(pady=5, padx=5, fill='x')
+        self.delete_btn.pack(pady=8, padx=10, fill='x')
     
     def _init_right_frame(self):
         # 右侧框架（功能区域）
@@ -132,7 +139,7 @@ class ImageResizerApp:
     
     def _init_resize_tab(self):
         # 调整尺寸标签页
-        self.resize_frame = ttk.Frame(self.notebook, padding="10")
+        self.resize_frame = ttk.Frame(self.notebook, padding="15")
         self.notebook.add(self.resize_frame, text="调整尺寸")
         
         # 宽度输入框
@@ -140,7 +147,7 @@ class ImageResizerApp:
         self.width_frame.pack(fill='x', pady=5)
         ttk.Label(self.width_frame, text="宽度:").pack(side='left')
         self.width_var = tk.StringVar()
-        self.width_entry = ttk.Entry(self.width_frame, textvariable=self.width_var, width=10)
+        self.width_entry = ttk.Entry(self.width_frame, textvariable=self.width_var, width=15)
         self.width_entry.pack(side='left', padx=5)
         ttk.Label(self.width_frame, text="像素").pack(side='left')
         
@@ -149,7 +156,7 @@ class ImageResizerApp:
         self.height_frame.pack(fill='x', pady=5)
         ttk.Label(self.height_frame, text="高度:").pack(side='left')
         self.height_var = tk.StringVar()
-        self.height_entry = ttk.Entry(self.height_frame, textvariable=self.height_var, width=10)
+        self.height_entry = ttk.Entry(self.height_frame, textvariable=self.height_var, width=15)
         self.height_entry.pack(side='left', padx=5)
         ttk.Label(self.height_frame, text="像素").pack(side='left')
         
@@ -161,11 +168,11 @@ class ImageResizerApp:
         
         ttk.Button(self.resize_frame,
                   text="开始调整尺寸",
-                  command=self.process_resize).pack(pady=10)
+                  command=self.process_resize).pack(pady=15, padx=10, fill='x')
     
     def _init_compress_tab(self):
         # 压缩标签页
-        self.compress_frame = ttk.Frame(self.notebook, padding="10")
+        self.compress_frame = ttk.Frame(self.notebook, padding="15")
         self.notebook.add(self.compress_frame, text="压缩")
         
         ttk.Label(self.compress_frame, text="压缩质量:").pack(pady=(0, 5))
@@ -187,11 +194,11 @@ class ImageResizerApp:
         
         ttk.Button(self.compress_frame,
                   text="开始压缩",
-                  command=self.process_compress).pack(pady=10)
+                  command=self.process_compress).pack(pady=15, padx=10, fill='x')
     
     def _init_random_tab(self):
         # 随机微调标签页
-        self.random_frame = ttk.Frame(self.notebook, padding="10")
+        self.random_frame = ttk.Frame(self.notebook, padding="15")
         self.notebook.add(self.random_frame, text="随机微调")
         
         ttk.Label(self.random_frame, text="最大旋转角度:").pack(pady=(0, 5))
@@ -207,11 +214,11 @@ class ImageResizerApp:
         
         ttk.Button(self.random_frame,
                   text="开始随机微调",
-                  command=self.process_random).pack(pady=10)
+                  command=self.process_random).pack(pady=15, padx=10, fill='x')
     
     def _init_exposure_tab(self):
         # 曝光度调整标签页
-        self.exposure_frame = ttk.Frame(self.notebook, padding="10")
+        self.exposure_frame = ttk.Frame(self.notebook, padding="15")
         self.notebook.add(self.exposure_frame, text="曝光度")
         
         ttk.Label(self.exposure_frame, text="曝光度调整:").pack(pady=(0, 5))
@@ -231,7 +238,7 @@ class ImageResizerApp:
         
         ttk.Button(self.exposure_frame,
                   text="开始调整曝光度",
-                  command=self.process_exposure).pack(pady=10)
+                  command=self.process_exposure).pack(pady=15, padx=10, fill='x')
     
     def select_folder(self):
         folder_path = filedialog.askdirectory()
@@ -371,7 +378,7 @@ class ImageResizerApp:
     
     def _init_filter_tab(self):
         # 滤镜效果标签页
-        self.filter_frame = ttk.Frame(self.notebook, padding="10")
+        self.filter_frame = ttk.Frame(self.notebook, padding="15")
         self.notebook.add(self.filter_frame, text="滤镜效果")
         
         ttk.Label(self.filter_frame, text="选择滤镜效果:").pack(pady=(0, 5))
@@ -409,7 +416,7 @@ class ImageResizerApp:
             self.filter_frame,
             text="应用滤镜",
             command=self.process_filter
-        ).pack(pady=10)
+        ).pack(pady=15, padx=10, fill='x')
     
     def process_filter(self):
         self.process_in_thread(
